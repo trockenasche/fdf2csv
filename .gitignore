@@ -57,6 +57,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# PyChram
+.idea/
+
 # =========================
 # Operating System Files
 # =========================
@@ -107,3 +110,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+*.csv
