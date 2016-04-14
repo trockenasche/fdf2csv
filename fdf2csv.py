@@ -2,7 +2,7 @@
 #title           :fdf2csv.py
 #description     :Extract all data from FDF file to a CSV file
 #author          :trockenasche
-#version         :0.5
+#version         :0.5.1
 #usage           :python fdf2csv.py file.fdf
 #=================================================
 
@@ -28,11 +28,11 @@ fdf_file = open(sys.argv[1], "r")
 fdf = fdf_file.read()
 
 # replace "empty" String to an empty value
-fdf_list = re.sub("þÿ", "", fdf)
-print(fdf_list)
+fdf_list = re.sub("(þÿ|FEFF)", "", fdf)
+# print(fdf_list)
 
 # Where the magic happened
-pattern = re.compile('\/T\(([^)]*)\)\/V[(/]([^>)]*)')
+pattern = re.compile('\/T\(([^)]*)\)\/V[(/<]([^>)]*)')
 fdf_list = re.findall(pattern, fdf_list)
 # print(fdf_list)
 
@@ -56,4 +56,6 @@ with open(csv_file, "w") as myfile:
 
 
 # TODO possibility to pass an alternative csv file as an argument
+# TODO a possibility to get all fdf from the current folder
+# TODO sorting the csv_head before
 # TODO check if there already a csv file with the same header and append the values
