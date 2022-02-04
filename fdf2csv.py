@@ -7,11 +7,13 @@
 #usage           :python fdf2csv.py file.fdf
 """
 
+import bisect
 import csv
 import os
 import re
 import sys
 from codecs import BOM_UTF16_LE, BOM_UTF16_BE
+
 
 # check if there are a argument
 arglen = len(sys.argv)
@@ -39,12 +41,15 @@ csv_values = []
 for i in fdf_list:
     bom = i[0][:2]
     if bom in (BOM_UTF16_LE, BOM_UTF16_BE):  # ignores Submit
-        csv_head.append(i[0].decode('utf-16'))
+        key = i[0].decode('utf-16')
+        loc = bisect.bisect(csv_head, key)
+        csv_head.insert(loc, key)
         bom = i[2][:2]
         if bom in (BOM_UTF16_LE, BOM_UTF16_BE):
-            csv_values.append(i[2].decode('utf-16'))
+            value = i[2].decode('utf-16')
         else:
-            csv_values.append(i[2].decode('utf-8'))
+            value = i[2].decode('utf-8')
+        csv_values.insert(loc, value)
 
 # Set the output filename based on input file
 csv_file = re.sub(r'\.fdf', ".csv", fname)
@@ -59,7 +64,6 @@ with open(csv_file, 'wt') as f:
 """
 TODO possibility to pass an alternative csv file as an argument
 TODO a possibility to get all fdf from the current folder
-TODO sorting the csv_head before
 TODO check if there already a csv file with the same header and append the
 values
 """
