@@ -9,9 +9,7 @@ This tool extract all information to a csv file.
 
 Usage
 =====
-    fdf2csv.py filename.fdf
+fdf2csv.py filename[.fdf]
 
-TODO
-====
-* Possibility to pass an alternative csv file as an argument
-* Check if there already a csv file with the same header and append the values
+Adds row/data to the output filename.csv if it exists. It is assumed that
+the FDF file labels are unique; They would become the CSV column names.

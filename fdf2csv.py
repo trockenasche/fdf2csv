@@ -3,10 +3,9 @@
 #title           :fdf2csv.py
 #description     :Extract all data from FDF file to a CSV file
 #author          :trockenasche
-#version         :0.5.1
 #usage           :python fdf2csv.py file.fdf
 
-#contributor     :wexi
+#hacker          :wexi
 #testing         :Acrobat Reader FDF's only
 """
 
