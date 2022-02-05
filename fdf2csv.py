@@ -51,24 +51,24 @@ def utf(bs):
         else bs.decode('ascii')
 
 
-csn_name = []
+csv_name = []
 csv_value = []
 for token in fdf_list:
     key = utf(token[0])
     if key not in ('Submit', 'Reset'):
-        loc = bisect.bisect(csn_name, key)
-        csn_name.insert(loc, key)
+        loc = bisect.bisect(csv_name, key)
+        csv_name.insert(loc, key)
         value = utf(token[2])
         csv_value.insert(loc, value)
 
 # Set the output filename based on input file
 csv_file = re.sub(r'\.fdf$', '.csv', fname)
 
-mode = 'at' if os.path.isfile(csv_file) else 'wt'
+mode = 'at' if os.path.isfile(csv_file) else 'xt'
 print('Adding to' if mode == 'at' else 'Creating', os.path.basename(csv_file))
 
 with open(csv_file, mode) as f:
     wr = csv.writer(f)
-    if mode == 'wt':
-        wr.writerow(csn_name)
+    if mode == 'xt':
+        wr.writerow(csv_name)
     wr.writerow(csv_value)
