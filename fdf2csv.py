@@ -14,7 +14,7 @@ import csv
 import os
 import re
 import sys
-from codecs import BOM_UTF16_LE, BOM_UTF16_BE
+from codecs import BOM_UTF16_BE
 
 
 # check if there are a argument
@@ -37,29 +37,29 @@ if not os.path.isfile(fname):
 with open(fname, 'rb') as f:
     fdf = f.read()
 
-if not fdf.startswith(b'%FDF-1.2\r%'):
+if not fdf.startswith(b'%FDF-1.2'):
     print("Error: Missing FDF signature")
     sys.exit()
 
 # Where the magic happened
-pattern = re.compile(rb'<</T\(([^\)]*)\)(/V\(([^\)]*)\))?>>')
+pattern = re.compile(rb'<</T\(([^\)]*)\)(/V\(?([^\)>]*)\)?>>)?')
 fdf_list = re.findall(pattern, fdf)
 
-# separate head and values
-csv_head = []
-csv_values = []
-for i in fdf_list:
-    bom = i[0][:2]
-    if bom in (BOM_UTF16_LE, BOM_UTF16_BE):  # ignores Submit
-        key = i[0].decode('utf-16')
-        loc = bisect.bisect(csv_head, key)
-        csv_head.insert(loc, key)
-        bom = i[2][:2]
-        if bom in (BOM_UTF16_LE, BOM_UTF16_BE):
-            value = i[2].decode('utf-16')
-        else:
-            value = i[2].decode('utf-8')
-        csv_values.insert(loc, value)
+
+def utf(bs):
+    return bs.decode('utf_16') if bs.startswith(BOM_UTF16_BE) \
+        else bs.decode('ascii')
+
+
+csn_name = []
+csv_value = []
+for token in fdf_list:
+    key = utf(token[0])
+    if key not in ('Submit', 'Reset'):
+        loc = bisect.bisect(csn_name, key)
+        csn_name.insert(loc, key)
+        value = utf(token[2])
+        csv_value.insert(loc, value)
 
 # Set the output filename based on input file
 csv_file = re.sub(r'\.fdf$', '.csv', fname)
@@ -70,5 +70,5 @@ print('Adding to' if mode == 'at' else 'Creating', os.path.basename(csv_file))
 with open(csv_file, mode) as f:
     wr = csv.writer(f)
     if mode == 'wt':
-        wr.writerow(csv_head)
-    wr.writerow(csv_values)
+        wr.writerow(csn_name)
+    wr.writerow(csv_value)
