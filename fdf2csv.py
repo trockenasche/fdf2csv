@@ -51,24 +51,35 @@ def utf(bs):
         else bs.decode('ascii')
 
 
-csv_name = []
-csv_value = []
+csv_names = []
+csv_values = []
 for token in fdf_list:
     key = utf(token[0])
     if key not in ('Submit', 'Reset'):
-        loc = bisect.bisect(csv_name, key)
-        csv_name.insert(loc, key)
+        loc = bisect.bisect(csv_names, key)
+        csv_names.insert(loc, key)
         value = utf(token[2])
-        csv_value.insert(loc, value)
+        csv_values.insert(loc, value)
 
 # Set the output filename based on input file
-csv_file = re.sub(r'\.fdf$', '.csv', fname)
+csv_fname = re.sub(r'\d*\.fdf$', '.csv', fname)
 
-mode = 'at' if os.path.isfile(csv_file) else 'xt'
-print('Adding to' if mode == 'at' else 'Creating', os.path.basename(csv_file))
+mode = 'rt' if os.path.isfile(csv_fname) else 'xt'
+print('Creating' if mode == 'xt' else 'Adding to',
+      os.path.basename(csv_fname))
 
-with open(csv_file, mode) as f:
+if mode == 'rt':
+    with open(csv_fname, mode) as f:
+        rd = csv.DictReader(f)
+        row = next(rd)
+        names = list(row.keys())  # no need to sort
+        if names != csv_names:
+            print("Error: Fields mismatch")
+            sys.exit()
+        mode = 'at'
+
+with open(csv_fname, mode) as f:
     wr = csv.writer(f)
     if mode == 'xt':
-        wr.writerow(csv_name)
-    wr.writerow(csv_value)
+        wr.writerow(csv_names)
+    wr.writerow(csv_values)
