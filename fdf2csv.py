@@ -5,6 +5,9 @@
 #author          :trockenasche
 #version         :0.5.1
 #usage           :python fdf2csv.py file.fdf
+
+#contributor     :wexi
+#testing         :Acrobat Reader FDF's only
 """
 
 import bisect
@@ -18,11 +21,15 @@ from codecs import BOM_UTF16_LE, BOM_UTF16_BE
 # check if there are a argument
 arglen = len(sys.argv)
 if not arglen == 2:
-    print("Usage: fdf2csv.py file.fdf")
+    print("Usage: fdf2csv.py file[.fdf]")
     sys.exit()
 
 # check if the file exist
 fname = os.path.expanduser(sys.argv[1])
+if fname.endswith('.'):
+    fname += 'fdf'
+elif not fname.endswith('.fdf'):
+    fname += '.fdf'
 if not os.path.isfile(fname):
     print("Error: " + fname + " doesn't exist")
     sys.exit()
@@ -30,6 +37,10 @@ if not os.path.isfile(fname):
 # open file
 with open(fname, 'rb') as f:
     fdf = f.read()
+
+if not fdf.startswith(b'%FDF-1.2\r%'):
+    print("Error: Missing FDF signature")
+    sys.exit()
 
 # Where the magic happened
 pattern = re.compile(rb'<</T\(([^\)]*)\)(/V\(([^\)]*)\))?>>')
@@ -52,18 +63,13 @@ for i in fdf_list:
         csv_values.insert(loc, value)
 
 # Set the output filename based on input file
-csv_file = re.sub(r'\.fdf', ".csv", fname)
+csv_file = re.sub(r'\.fdf$', '.csv', fname)
 
-print("writing file", csv_file)
+mode = 'at' if os.path.isfile(csv_file) else 'wt'
+print('Adding to' if mode == 'at' else 'Creating', os.path.basename(csv_file))
 
-with open(csv_file, 'wt') as f:
+with open(csv_file, mode) as f:
     wr = csv.writer(f)
-    wr.writerow(csv_head)
+    if mode == 'wt':
+        wr.writerow(csv_head)
     wr.writerow(csv_values)
-
-"""
-TODO possibility to pass an alternative csv file as an argument
-TODO a possibility to get all fdf from the current folder
-TODO check if there already a csv file with the same header and append the
-values
-"""
